@@ -1,0 +1,34 @@
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+  ManyToOne,
+} from 'typeorm';
+import { Projects } from './projects.entity';
+
+export enum ProjectAssetType {
+  link = 'link',
+}
+
+@Entity({ name: 'project_assets' })
+export class ProjectAssets {
+  @PrimaryGeneratedColumn()
+  id: string;
+
+  @Column({ type: 'text' })
+  resource: string;
+
+  @Column({ type: 'enum', enum: ProjectAssetType.link })
+  type: ProjectAssetType;
+
+  @ManyToOne(() => Projects)
+  @JoinColumn({ name: 'projectId' })
+  projectId: Projects;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @Column({ type: 'timestamp', default: null, nullable: true })
+  deletedAt: Date;
+}
