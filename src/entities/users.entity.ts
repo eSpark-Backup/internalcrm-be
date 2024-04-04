@@ -8,14 +8,14 @@ import {
 } from 'typeorm';
 import { Role } from './roles.entity';
 
-export enum USER_GENDERS {
+export enum UserGenders {
   M = 'M',
   F = 'F',
 }
 @Entity({ name: 'users' })
 export class Users {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column({ length: 100 })
   firstName: string;
@@ -23,8 +23,8 @@ export class Users {
   @Column({ length: 100 })
   lastName: string;
 
-  @Column({ type: 'enum', enum: USER_GENDERS })
-  gender: USER_GENDERS;
+  @Column({ type: 'enum', enum: UserGenders })
+  gender: UserGenders;
 
   @Column({ unique: true })
   employee_id: string;

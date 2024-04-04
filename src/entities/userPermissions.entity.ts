@@ -13,7 +13,7 @@ import { Permissions } from './permissions.entity';
 @Index(['userId', 'permissionId'])
 export class UserPermissions {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @OneToOne(() => Users)
   @JoinColumn({ name: 'userId' })

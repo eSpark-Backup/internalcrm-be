@@ -13,7 +13,7 @@ import { Users } from './users.entity';
 @Index(['userId', 'projectId'])
 export class ProjectMembers {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @OneToOne(() => Projects)
   @JoinColumn({ name: 'projectId' })

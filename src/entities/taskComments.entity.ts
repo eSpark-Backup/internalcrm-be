@@ -11,7 +11,7 @@ import { Tasks } from './tasks.entity';
 @Entity({ name: 'task_comments' })
 export class TaskComments {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column({ type: 'text' })
   comment: string;

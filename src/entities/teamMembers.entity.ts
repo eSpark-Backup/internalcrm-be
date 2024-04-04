@@ -4,14 +4,16 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Users } from './users.entity';
 import { Teams } from './teams.entity';
 
 @Entity({ name: 'team_members' })
+@Index(['userId', 'teamId'])
 export class TeamMembers {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @OneToOne(() => Users)
   @JoinColumn({ name: 'userId' })

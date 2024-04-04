@@ -7,7 +7,7 @@ import {
 @Entity({ name: 'permissions' })
 export class Permissions {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column({ length: 255 })
   name: string;

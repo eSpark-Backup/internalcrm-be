@@ -15,7 +15,7 @@ export enum TaskStatus {
 @Entity({ name: 'tasks' })
 export class Tasks {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Index()
   @Column({ length: 255 })

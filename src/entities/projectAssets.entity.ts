@@ -9,12 +9,13 @@ import { Projects } from './projects.entity';
 
 export enum ProjectAssetType {
   link = 'link',
+  document = 'document',
 }
 
 @Entity({ name: 'project_assets' })
 export class ProjectAssets {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column({ type: 'text' })
   resource: string;
