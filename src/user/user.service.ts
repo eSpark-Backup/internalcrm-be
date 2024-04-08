@@ -18,7 +18,7 @@ export class UserService {
       where: { email: userCreds.email },
     });
     if (!user) {
-      throw new UnauthorizedException(`Username or password invalid`);
+      throw new UnauthorizedException(`Email or Password invalid`);
     }
     const isPassCorrect = await bcrypt.compare(
       userCreds.password,
@@ -27,9 +27,15 @@ export class UserService {
     if (!isPassCorrect) {
       throw new UnauthorizedException(`Username or password invalid`);
     }
+    if (!user.isActive) {
+      throw new UnauthorizedException(`User is no longer active`);
+    }
     const payload = { id: user.id, email: user.email };
+    const expiresIn = userCreds.rememberMe
+      ? process.env.JWT_EXPIRE_REMEMBER_ME
+      : process.env.JWT_EXPIRE_NORMAL;
     const token = await this.jwtService.signAsync(payload, {
-      expiresIn: '24h',
+      expiresIn,
     });
     return { user, token };
   }

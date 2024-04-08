@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -31,4 +33,12 @@ export class LoginDTO {
       'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
   })
   readonly password: string;
+
+  @ApiProperty({
+    type: Boolean,
+    example: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  readonly rememberMe?: boolean;
 }
