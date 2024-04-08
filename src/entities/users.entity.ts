@@ -7,6 +7,7 @@ import {
   Index,
 } from 'typeorm';
 import { Role } from './roles.entity';
+import { Exclude } from 'class-transformer';
 
 export enum UserGenders {
   M = 'M',
@@ -32,6 +33,7 @@ export class Users {
   @Column({ unique: true, length: 255 })
   email: string;
 
+  @Exclude()
   @Index()
   @Column({ length: 255 })
   password: string;

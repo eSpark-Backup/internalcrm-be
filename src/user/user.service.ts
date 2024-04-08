@@ -39,4 +39,10 @@ export class UserService {
     });
     return { user, token };
   }
+  async getUserDetails(id: number) {
+    return this.userRepositry.findOne({
+      where: { id, isActive: true },
+      relations: ['roleId'],
+    });
+  }
 }

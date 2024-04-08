@@ -20,7 +20,11 @@ export class ProjectAssets {
   @Column({ type: 'text' })
   resource: string;
 
-  @Column({ type: 'enum', enum: ProjectAssetType.link })
+  @Column({
+    type: 'enum',
+    enum: ProjectAssetType,
+    default: ProjectAssetType.link,
+  })
   type: ProjectAssetType;
 
   @ManyToOne(() => Projects)
