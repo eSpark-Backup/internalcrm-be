@@ -1,11 +1,15 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
+export enum UserRoles {
+  super = 'super-admin',
+  lead = 'team-lead',
+}
 @Entity({ name: 'roles' })
 export class Role {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 255 })
+  @Column({ type: 'enum', enum: UserRoles })
   name: string;
 
   @Column({ type: 'text', nullable: true })
