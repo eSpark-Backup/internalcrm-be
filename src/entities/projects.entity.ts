@@ -21,7 +21,7 @@ export class Projects {
   @Column({ type: 'timestamp' })
   startingDate: Date;
 
-  @ManyToOne(() => Users)
+  @ManyToOne(() => Users, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdBy: Users;
 
