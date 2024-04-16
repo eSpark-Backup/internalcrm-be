@@ -1,28 +1,28 @@
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
-  OneToOne,
   JoinColumn,
   Index,
+  DeleteDateColumn,
+  ManyToOne,
 } from 'typeorm';
 import { Projects } from './projects.entity';
 import { Users } from './users.entity';
 
 @Entity({ name: 'project_members' })
-@Index(['userId', 'projectId'])
+@Index(['userId', 'projectId'], { unique: true })
 export class ProjectMembers {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Projects)
+  @ManyToOne(() => Projects, (project) => project.members)
   @JoinColumn({ name: 'projectId' })
   projectId: Projects;
 
-  @OneToOne(() => Users)
+  @ManyToOne(() => Users, { nullable: false })
   @JoinColumn({ name: 'userId' })
   userId: Users;
 
-  @Column({ type: 'boolean', default: true })
-  isActive: boolean;
+  @DeleteDateColumn()
+  deletedAt: Date;
 }

@@ -14,7 +14,12 @@ import { AuthGuard } from 'src/auth/auth-guard';
 import { Roles } from 'src/auth/roles-guard';
 import { UserRoles } from 'src/entities/roles.entity';
 import { ProjectsService } from './projects.service';
-import { CreateProjectDTO, UpdateProjectDTO } from './projects-dto';
+import {
+  AddMembersDTO,
+  CreateProjectDTO,
+  UpdateProjectDTO,
+  UserIdDTO,
+} from './projects-dto';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/users.entity';
 import { ParamIdDTO } from 'src/utils/id-dto';
@@ -36,6 +41,23 @@ export class ProjectsController {
     @CurrentUser() user: Users,
   ) {
     const data = await this.projectsService.createProject(reqBody, user);
+    return {
+      data,
+      status: 'success',
+      message: 'Project has been created successfully!',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Add Members',
+  })
+  @UseGuards(AuthGuard)
+  @Roles([UserRoles.super, UserRoles.lead])
+  @Post('/members')
+  @HttpCode(200)
+  async addMembers(@Body() reqBody: AddMembersDTO) {
+    const data = await this.projectsService.addMembers(reqBody);
     return {
       data,
       status: 'success',
@@ -93,6 +115,39 @@ export class ProjectsController {
     return {
       status: 'success',
       message: 'Project has been deleted successfully!',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Fetch All Members of a Project',
+  })
+  @Roles([UserRoles.super, UserRoles.lead])
+  @UseGuards(AuthGuard)
+  @Get(':id/members')
+  @HttpCode(200)
+  async fetchAllMembers(@CurrentUser() user: Users, @Param() id: ParamIdDTO) {
+    const data = await this.projectsService.getMembers(user, id.id);
+    return {
+      data,
+      status: 'success',
+      message: 'Members have been fetched successfully!',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete Member',
+  })
+  @Roles([UserRoles.super, UserRoles.lead])
+  @UseGuards(AuthGuard)
+  @Delete(':id/member/:userId')
+  @HttpCode(200)
+  async deleteMember(@CurrentUser() user: Users, @Param() id: UserIdDTO) {
+    await this.projectsService.deleteMember(user, id.id, id.userId);
+    return {
+      status: 'success',
+      message: 'Member has been deleted successfully!',
     };
   }
 }
