@@ -3,8 +3,8 @@ import {
   Column,
   PrimaryGeneratedColumn,
   JoinColumn,
-  OneToOne,
   Index,
+  ManyToOne,
 } from 'typeorm';
 import { Role } from './roles.entity';
 import { Exclude } from 'class-transformer';
@@ -38,7 +38,7 @@ export class Users {
   @Column({ length: 255 })
   password: string;
 
-  @OneToOne(() => Role)
+  @ManyToOne(() => Role)
   @JoinColumn({ name: 'roleId' })
   roleId: Role;
 

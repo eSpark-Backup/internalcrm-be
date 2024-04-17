@@ -4,9 +4,13 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
+  DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Users } from './users.entity';
+import { ProjectMembers } from './projectMembers.entity';
 
+export type ProjectsObj = Omit<Projects, 'id' | 'createdAt'>;
 @Entity({ name: 'projects' })
 export class Projects {
   @PrimaryGeneratedColumn()
@@ -25,9 +29,12 @@ export class Projects {
   @JoinColumn({ name: 'createdBy' })
   createdBy: Users;
 
-  @Column({ type: 'boolean', default: false })
-  archived: boolean;
-
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @OneToMany(() => ProjectMembers, (user) => user.projectId, { cascade: true })
+  members?: ProjectMembers[];
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
