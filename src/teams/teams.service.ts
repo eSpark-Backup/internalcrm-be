@@ -15,7 +15,7 @@ export class TeamService {
   constructor(
     @InjectRepository(Teams)
     private teamsRepo: Repository<Teams>,
-    private userSerive: UserService,
+    private userService: UserService,
   ) {}
 
   create(teamObj) {
@@ -24,7 +24,7 @@ export class TeamService {
   }
 
   async createTeam(teamObj: CreateTeamDTO) {
-    const user = await this.userSerive.getUserDetails(teamObj.head);
+    const user = await this.userService.getUserDetails(teamObj.head);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -37,7 +37,7 @@ export class TeamService {
 
   async updateTeam(id: number, teamObj) {
     if (teamObj.head) {
-      const user = await this.userSerive.getUserDetails(teamObj.head);
+      const user = await this.userService.getUserDetails(teamObj.head);
       if (!user) {
         throw new NotFoundException('User not found');
       }

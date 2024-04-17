@@ -1,6 +1,6 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateTeamDTO {
   @ApiProperty({
@@ -11,12 +11,13 @@ export class CreateTeamDTO {
   @IsNotEmpty()
   readonly name: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: String,
     example: 'team description',
   })
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   readonly description: string;
 
   @ApiProperty({
@@ -28,13 +29,3 @@ export class CreateTeamDTO {
 }
 
 export class UpdateTeamDTO extends PartialType(CreateTeamDTO) {}
-
-export class ParamIdDTO {
-  @ApiProperty({
-    type: String,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  @Transform(({ value }) => parseInt(value))
-  readonly id: number;
-}

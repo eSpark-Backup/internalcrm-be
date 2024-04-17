@@ -13,8 +13,9 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth-guard';
 import { Roles } from 'src/auth/roles-guard';
 import { UserRoles } from 'src/entities/roles.entity';
-import { CreateTeamDTO, ParamIdDTO, UpdateTeamDTO } from './teams-dto';
+import { CreateTeamDTO, UpdateTeamDTO } from './teams-dto';
 import { TeamService } from './teams.service';
+import { ParamIdDTO } from 'src/utils/id-dto';
 
 @ApiTags('Teams')
 @Controller('teams')
@@ -73,7 +74,7 @@ export class TeamController {
 
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Update Team Details',
+    summary: 'Delete Team',
   })
   @UseGuards(AuthGuard)
   @Roles([UserRoles.super])
@@ -83,7 +84,7 @@ export class TeamController {
     await this.teamService.deleteTeam(id.id);
     return {
       status: 'success',
-      message: 'Teams has been deleted successfully!',
+      message: 'Team has been deleted successfully!',
     };
   }
 }
