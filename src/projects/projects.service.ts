@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Projects, ProjectsObj } from 'src/entities/projects.entity';
 import { UserService } from 'src/user/user.service';
@@ -7,9 +12,17 @@ import {
   AddMembersDTO,
   CreateProjectDTO,
   UpdateProjectDTO,
+  UploadAssetDTO,
 } from './projects-dto';
 import { Users } from 'src/entities/users.entity';
 import { ProjectMembers } from 'src/entities/projectMembers.entity';
+import { extname, join } from 'path';
+import { createReadStream, promises } from 'fs';
+import {
+  ProjectAssetType,
+  ProjectAssets,
+} from 'src/entities/projectAssets.entity';
+import { assetsFolder } from 'src/utils/constants';
 
 @Injectable()
 export class ProjectsService {
@@ -18,6 +31,8 @@ export class ProjectsService {
     private projectsRepo: Repository<Projects>,
     @InjectRepository(ProjectMembers)
     private projectMembersRepo: Repository<ProjectMembers>,
+    @InjectRepository(ProjectAssets)
+    private projectAssetsRepo: Repository<ProjectAssets>,
     private userService: UserService,
   ) {}
   create(projectObj: ProjectsObj) {
@@ -94,5 +109,82 @@ export class ProjectsService {
       throw new NotFoundException('Member not found!');
     }
     return this.projectMembersRepo.softRemove(member);
+  }
+
+  async uploadAsset(file: Express.Multer.File, data: UploadAssetDTO) {
+    if (data.type === ProjectAssetType.document && !file) {
+      throw new BadRequestException('Asset is required if type is document');
+    }
+    const project = await this.projectsRepo.findOne({
+      where: { id: data.projectId },
+    });
+    if (!project) {
+      throw new NotFoundException('Project nout found!');
+    }
+    let resource: string;
+    if (file && data.type === ProjectAssetType.document) {
+      resource = file.originalname;
+      const directoryPath = assetsFolder;
+      const filePath = join(
+        directoryPath,
+        `${resource}_${data.projectId}${extname(file.originalname)}`,
+      );
+      try {
+        await promises.access(directoryPath);
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          await promises.mkdir(directoryPath, { recursive: true });
+        } else {
+          throw error;
+        }
+      }
+      await promises.writeFile(filePath, file.buffer);
+    } else if (!data.link) {
+      throw new BadRequestException('Pleas provide link');
+    } else {
+      resource = data.link;
+    }
+    const asset = this.projectAssetsRepo.create({
+      projectId: project,
+      resource,
+      type: data.type,
+    });
+    await this.projectAssetsRepo.save(asset);
+  }
+
+  async fetchAssets(type: ProjectAssetType, projectId: number) {
+    return this.projectAssetsRepo.find({
+      where: { type, projectId: { id: projectId } },
+    });
+  }
+
+  async downloadAsset(assetId: number) {
+    const asset = await this.projectAssetsRepo.findOne({
+      where: { id: assetId, type: ProjectAssetType.document },
+      relations: ['projectId'],
+    });
+    if (!asset) {
+      throw new NotFoundException('Asset not found!');
+    }
+    const directoryPath = assetsFolder;
+    const filePath = join(
+      directoryPath,
+      `${asset.resource}_${asset.projectId.id}${extname(asset.resource)}`,
+    );
+    try {
+      await promises.access(filePath);
+    } catch (error) {
+      throw new NotFoundException('File not found!');
+    }
+    const file = createReadStream(filePath);
+    return { file: new StreamableFile(file), fileName: asset.resource };
+  }
+
+  async deleteAsset(assetId: number) {
+    const asset = await this.projectAssetsRepo.findOne({ where: { id: assetId } });
+    if(!asset){
+      throw new NotFoundException("Asset not found")
+    }
+    return this.projectAssetsRepo.softRemove(asset);
   }
 }

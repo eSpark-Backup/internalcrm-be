@@ -7,11 +7,12 @@ import { Projects } from 'src/entities/projects.entity';
 import { ProjectMembers } from 'src/entities/projectMembers.entity';
 import { ProjectMembersSubscriber } from 'src/subscribers/project-members';
 import { Users } from 'src/entities/users.entity';
+import { ProjectAssets } from 'src/entities/projectAssets.entity';
 
 @Module({
   imports: [
     UserModule,
-    TypeOrmModule.forFeature([Projects, ProjectMembers, Users]),
+    TypeOrmModule.forFeature([Projects, ProjectMembers, Users, ProjectAssets]),
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService, ProjectMembersSubscriber],
