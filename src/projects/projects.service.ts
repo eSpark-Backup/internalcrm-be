@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Projects, ProjectsObj } from 'src/entities/projects.entity';
@@ -16,13 +15,13 @@ import {
 } from './projects-dto';
 import { Users } from 'src/entities/users.entity';
 import { ProjectMembers } from 'src/entities/projectMembers.entity';
-import { extname, join } from 'path';
-import { createReadStream, promises } from 'fs';
+import { extname } from 'path';
 import {
   ProjectAssetType,
   ProjectAssets,
 } from 'src/entities/projectAssets.entity';
 import { assetsFolder } from 'src/utils/constants';
+import { CloudStorageService } from 'src/utils/file.storage';
 
 @Injectable()
 export class ProjectsService {
@@ -34,6 +33,7 @@ export class ProjectsService {
     @InjectRepository(ProjectAssets)
     private projectAssetsRepo: Repository<ProjectAssets>,
     private userService: UserService,
+    private fileStorage: CloudStorageService,
   ) {}
   create(projectObj: ProjectsObj) {
     const newProject = this.projectsRepo.create(projectObj);
@@ -125,20 +125,8 @@ export class ProjectsService {
     if (file && data.type === ProjectAssetType.document) {
       resource = file.originalname;
       const directoryPath = assetsFolder;
-      const filePath = join(
-        directoryPath,
-        `${resource}_${data.projectId}${extname(file.originalname)}`,
-      );
-      try {
-        await promises.access(directoryPath);
-      } catch (error) {
-        if (error.code === 'ENOENT') {
-          await promises.mkdir(directoryPath, { recursive: true });
-        } else {
-          throw error;
-        }
-      }
-      await promises.writeFile(filePath, file.buffer);
+      const filePath = `${directoryPath}/${resource}_${data.projectId}${extname(file.originalname)}`;
+      await this.fileStorage.uploadAsset(file, filePath);
     } else if (!data.link) {
       throw new BadRequestException('Pleas provide link');
     } else {
@@ -149,7 +137,8 @@ export class ProjectsService {
       resource,
       type: data.type,
     });
-    await this.projectAssetsRepo.save(asset);
+    const { id } = await this.projectAssetsRepo.save(asset);
+    return { id };
   }
 
   async fetchAssets(type: ProjectAssetType, projectId: number) {
@@ -167,23 +156,20 @@ export class ProjectsService {
       throw new NotFoundException('Asset not found!');
     }
     const directoryPath = assetsFolder;
-    const filePath = join(
-      directoryPath,
-      `${asset.resource}_${asset.projectId.id}${extname(asset.resource)}`,
-    );
-    try {
-      await promises.access(filePath);
-    } catch (error) {
-      throw new NotFoundException('File not found!');
-    }
-    const file = createReadStream(filePath);
-    return { file: new StreamableFile(file), fileName: asset.resource };
+    const filePath = `${directoryPath}/${asset.resource}_${asset.projectId.id}${extname(asset.resource)}`;
+    const file = await this.fileStorage.downloadAsset(filePath);
+    return {
+      file,
+      fileName: asset.resource,
+    };
   }
 
   async deleteAsset(assetId: number) {
-    const asset = await this.projectAssetsRepo.findOne({ where: { id: assetId } });
-    if(!asset){
-      throw new NotFoundException("Asset not found")
+    const asset = await this.projectAssetsRepo.findOne({
+      where: { id: assetId },
+    });
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
     }
     return this.projectAssetsRepo.softRemove(asset);
   }

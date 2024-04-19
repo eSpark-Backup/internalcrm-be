@@ -8,6 +8,7 @@ import { ProjectMembers } from 'src/entities/projectMembers.entity';
 import { ProjectMembersSubscriber } from 'src/subscribers/project-members';
 import { Users } from 'src/entities/users.entity';
 import { ProjectAssets } from 'src/entities/projectAssets.entity';
+import { CloudStorageService } from 'src/utils/file.storage';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { ProjectAssets } from 'src/entities/projectAssets.entity';
     TypeOrmModule.forFeature([Projects, ProjectMembers, Users, ProjectAssets]),
   ],
   controllers: [ProjectsController],
-  providers: [ProjectsService, ProjectMembersSubscriber],
+  providers: [ProjectsService, ProjectMembersSubscriber, CloudStorageService],
 })
 export class ProjectsModule {}

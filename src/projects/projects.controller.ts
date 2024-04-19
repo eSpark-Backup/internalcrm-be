@@ -4,7 +4,9 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   Patch,
   Post,
   Query,
@@ -70,14 +72,24 @@ export class ProjectsController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('asset'))
   async uploadAsset(
-    @UploadedFile()
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({
+          maxSize: +process.env.MAX_ASSET_UPLOAD_SIZE * 1000,
+          message: `File cannot be greater than ${+process.env.MAX_ASSET_UPLOAD_SIZE / 1000} MBs`,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
     asset: Express.Multer.File,
     @Body() reqBody: UploadAssetDTO,
   ) {
-    await this.projectsService.uploadAsset(asset, reqBody);
+    const data = await this.projectsService.uploadAsset(asset, reqBody);
     return {
+      data,
       status: 'success',
-      message: 'Asset has been uploaded!',
+      message: 'Asset has been uploaded successfully!',
     };
   }
 
@@ -195,15 +207,15 @@ export class ProjectsController {
   @UseGuards(AuthGuard)
   @Get('asset/:id')
   @HttpCode(200)
-  async downloadAsset(
-    @Res({ passthrough: true }) res: Response,
-    @Param() id: ParamIdDTO,
-  ) {
-    const { file, fileName } = await this.projectsService.downloadAsset(id.id);
+  async downloadAsset(@Param() id: ParamIdDTO, @Res() res: Response) {
+    const response = await this.projectsService.downloadAsset(id.id);
+    const { data, headers } = response.file;
     res.set({
-      'Content-Disposition': `attachment; filename=${fileName}`,
+      'Content-Type': headers['content-type'],
+      'Content-Length': headers['content-length'],
+      'Content-Disposition': `attachment; filename="${response.fileName}"`, // Assuming the file name is known
     });
-    return file;
+    res.send(data);
   }
   @ApiBearerAuth()
   @ApiOperation({
