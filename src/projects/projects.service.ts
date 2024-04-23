@@ -22,6 +22,7 @@ import {
 } from 'src/entities/projectAssets.entity';
 import { assetsFolder } from 'src/utils/constants';
 import { CloudStorageService } from 'src/utils/file.storage';
+import { Readable } from 'stream';
 
 @Injectable()
 export class ProjectsService {
@@ -58,7 +59,7 @@ export class ProjectsService {
     if (!project) {
       throw new NotFoundException('Project not found');
     }
-    this.projectsRepo.save({ ...project, ...projectObj });
+    await this.projectsRepo.save({ ...project, ...projectObj });
     return projectObj;
   }
 
@@ -126,7 +127,7 @@ export class ProjectsService {
       resource = file.originalname;
       const directoryPath = assetsFolder;
       const filePath = `${directoryPath}/${resource}_${data.projectId}${extname(file.originalname)}`;
-      await this.fileStorage.uploadAsset(file, filePath);
+      await this.fileStorage.upload(filePath, file.buffer);
     } else if (!data.link) {
       throw new BadRequestException('Pleas provide link');
     } else {
@@ -157,11 +158,9 @@ export class ProjectsService {
     }
     const directoryPath = assetsFolder;
     const filePath = `${directoryPath}/${asset.resource}_${asset.projectId.id}${extname(asset.resource)}`;
-    const file = await this.fileStorage.downloadAsset(filePath);
-    return {
-      file,
-      fileName: asset.resource,
-    };
+    const file = await this.fileStorage.download(filePath);
+    const readable = file.Body as unknown as Readable;
+    return { file: readable, fileName: asset.resource };
   }
 
   async deleteAsset(assetId: number) {

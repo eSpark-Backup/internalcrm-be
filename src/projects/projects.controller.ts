@@ -208,14 +208,12 @@ export class ProjectsController {
   @Get('asset/:id')
   @HttpCode(200)
   async downloadAsset(@Param() id: ParamIdDTO, @Res() res: Response) {
-    const response = await this.projectsService.downloadAsset(id.id);
-    const { data, headers } = response.file;
+    const { file, fileName } = await this.projectsService.downloadAsset(id.id);
+    res.setHeader('Content-Type', 'application/octet-stream');
     res.set({
-      'Content-Type': headers['content-type'],
-      'Content-Length': headers['content-length'],
-      'Content-Disposition': `attachment; filename="${response.fileName}"`, // Assuming the file name is known
+      'Content-Disposition': `attachment; filename="${fileName}"`, // Assuming the file name is known
     });
-    res.send(data);
+    file.pipe(res);
   }
   @ApiBearerAuth()
   @ApiOperation({
