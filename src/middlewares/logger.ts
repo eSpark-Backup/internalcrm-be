@@ -6,10 +6,12 @@ export class RequestLoggingMiddleware implements NestMiddleware {
   private logger = new Logger('RequestLoggingMiddleware');
 
   use(req: Request, res: Response, next: NextFunction) {
-    const { method, baseUrl, body, query, params, route } = req;
-    this.logger.log(
-      `Incoming request: ${method} ${baseUrl} - Body: ${JSON.stringify(body)} - Query: ${JSON.stringify(query)} - Params: ${JSON.stringify(query)}`,
-    );
+    if (process.env.NODE_ENV != 'production') {
+      const { method, baseUrl, body, query, params, route } = req;
+      this.logger.log(
+        `Incoming request: ${method} ${baseUrl} - Body: ${JSON.stringify(body)} - Query: ${JSON.stringify(query)} - Params: ${JSON.stringify(query)}`,
+      );
+    }
     next();
   }
 }
