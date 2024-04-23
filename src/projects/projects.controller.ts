@@ -75,8 +75,8 @@ export class ProjectsController {
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
-          maxSize: +process.env.MAX_ASSET_UPLOAD_SIZE * 1000,
-          message: `File cannot be greater than ${+process.env.MAX_ASSET_UPLOAD_SIZE / 1000} MBs`,
+          maxSize: +process.env.MAX_ASSET_UPLOAD_SIZE * 1024,
+          message: `File cannot be greater than ${+process.env.MAX_ASSET_UPLOAD_SIZE / 1024} MBs`,
         })
         .build({
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
