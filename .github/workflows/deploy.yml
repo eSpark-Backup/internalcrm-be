@@ -10,21 +10,40 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x]
+
+    env:
+      PORT: ${{ secrets.PORT }}
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+      MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+      MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MYSQL_DB: ${{ secrets.MYSQL_DB }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRE_NORMAL: ${{ secrets.JWT_EXPIRE_NORMAL }}
+      JWT_EXPIRE_REMEMBER_ME: ${{ secrets.JWT_EXPIRE_REMEMBER_ME }}
+      MAX_ASSET_UPLOAD_SIZE: ${{ secrets.MAX_ASSET_UPLOAD_SIZE }}
+      B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+      B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      BUCKET_ID: ${{ secrets.BUCKET_ID }}
+      BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+      END_POINT: ${{ secrets.END_POINT }}
+      REGION: ${{ secrets.REGION }}
+
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Use Node.js ${{ matrix.node-version }}
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: ${{ matrix.node-version }}
-      #     cache: 'npm'
-      # - run: npm i
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm i
 
-      # - name: Run migration for database
-      #   run: npm run migration:run
+      - name: Run migration for database
+        run: npm run migration:run
 
-      # - name: Restart NestJS application
-      #   run: npm run deploy:dev
+      - name: Restart NestJS application
+        run: npm run deploy:dev
 
-      # - name: Save pm2
-      #   run: pm2 save
+      - name: Save pm2
+        run: pm2 save
