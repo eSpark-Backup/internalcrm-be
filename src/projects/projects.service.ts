@@ -40,6 +40,13 @@ export class ProjectsService {
     const newProject = this.projectsRepo.create(projectObj);
     return this.projectsRepo.save(newProject);
   }
+  async findOne(id: number) {
+    const project = await this.projectsRepo.findOne({ where: { id } });
+    if (!project) {
+      throw new NotFoundException('Project not found!');
+    }
+    return project;
+  }
   async createProject(projectObj: CreateProjectDTO, currentUser: Users) {
     const user = await this.userService.getUserDetails(currentUser.id);
     if (!user) {
@@ -120,7 +127,7 @@ export class ProjectsService {
       where: { id: data.projectId },
     });
     if (!project) {
-      throw new NotFoundException('Project nout found!');
+      throw new NotFoundException('Project not found!');
     }
     let resource: string;
     if (file && data.type === ProjectAssetType.document) {
@@ -129,7 +136,7 @@ export class ProjectsService {
       const filePath = `${directoryPath}/${resource}_${data.projectId}${extname(file.originalname)}`;
       await this.fileStorage.upload(filePath, file.buffer);
     } else if (!data.link) {
-      throw new BadRequestException('Pleas provide link');
+      throw new BadRequestException('Please provide link');
     } else {
       resource = data.link;
     }

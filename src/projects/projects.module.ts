@@ -17,5 +17,6 @@ import { CloudStorageService } from 'src/utils/file.storage';
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService, ProjectMembersSubscriber, CloudStorageService],
+  exports: [ProjectsService],
 })
 export class ProjectsModule {}

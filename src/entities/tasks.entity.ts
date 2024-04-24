@@ -42,7 +42,7 @@ export class Tasks {
   @JoinColumn({ name: 'assignedBy' })
   assignedBy: Users;
 
-  @ManyToOne(() => Cards)
+  @ManyToOne(() => Cards, (card) => card.tasks)
   @JoinColumn({ name: 'cardId' })
   cardId: Cards;
 
