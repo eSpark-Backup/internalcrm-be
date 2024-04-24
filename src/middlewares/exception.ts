@@ -23,7 +23,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       Array.isArray(responseObj.message) && responseObj.message.length
         ? responseObj.message[0]
         : responseObj.message;
-    this.logger.error(responseObj);
+    this.logger.error(exception.stack);
     response.status(status).json(responseObj);
   }
 }

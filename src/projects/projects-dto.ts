@@ -1,13 +1,17 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
+  IsUrl,
 } from 'class-validator';
+import { ProjectAssetType } from 'src/entities/projectAssets.entity';
 import { ParamIdDTO } from 'src/utils/id-dto';
 
 export class CreateProjectDTO {
@@ -62,4 +66,40 @@ export class UserIdDTO extends ParamIdDTO {
   @IsNumber()
   @Transform(({ value }) => parseInt(value))
   readonly userId: number;
+}
+
+export class UploadAssetDTO {
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'binary',
+  })
+  readonly asset: Express.Multer.File;
+
+  @ApiProperty({ type: String })
+  @IsEnum(ProjectAssetType)
+  @IsNotEmpty()
+  readonly type: ProjectAssetType;
+
+  @ApiProperty({
+    type: String,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  @Transform(({ value }) => parseInt(value))
+  readonly projectId: number;
+
+  @ApiPropertyOptional({ type: String })
+  @IsUrl()
+  @IsNotEmpty()
+  @IsOptional()
+  readonly link: string;
+}
+
+export class ProjectAssetTypeDTO {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  @IsEnum(ProjectAssetType)
+  readonly type?: ProjectAssetType;
 }

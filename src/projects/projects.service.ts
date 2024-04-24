@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Projects, ProjectsObj } from 'src/entities/projects.entity';
 import { UserService } from 'src/user/user.service';
@@ -7,9 +11,18 @@ import {
   AddMembersDTO,
   CreateProjectDTO,
   UpdateProjectDTO,
+  UploadAssetDTO,
 } from './projects-dto';
 import { Users } from 'src/entities/users.entity';
 import { ProjectMembers } from 'src/entities/projectMembers.entity';
+import { extname } from 'path';
+import {
+  ProjectAssetType,
+  ProjectAssets,
+} from 'src/entities/projectAssets.entity';
+import { assetsFolder } from 'src/utils/constants';
+import { CloudStorageService } from 'src/utils/file.storage';
+import { Readable } from 'stream';
 
 @Injectable()
 export class ProjectsService {
@@ -18,7 +31,10 @@ export class ProjectsService {
     private projectsRepo: Repository<Projects>,
     @InjectRepository(ProjectMembers)
     private projectMembersRepo: Repository<ProjectMembers>,
+    @InjectRepository(ProjectAssets)
+    private projectAssetsRepo: Repository<ProjectAssets>,
     private userService: UserService,
+    private fileStorage: CloudStorageService,
   ) {}
   create(projectObj: ProjectsObj) {
     const newProject = this.projectsRepo.create(projectObj);
@@ -43,7 +59,7 @@ export class ProjectsService {
     if (!project) {
       throw new NotFoundException('Project not found');
     }
-    this.projectsRepo.save({ ...project, ...projectObj });
+    await this.projectsRepo.save({ ...project, ...projectObj });
     return projectObj;
   }
 
@@ -94,5 +110,66 @@ export class ProjectsService {
       throw new NotFoundException('Member not found!');
     }
     return this.projectMembersRepo.softRemove(member);
+  }
+
+  async uploadAsset(file: Express.Multer.File, data: UploadAssetDTO) {
+    if (data.type === ProjectAssetType.document && !file) {
+      throw new BadRequestException('Asset is required if type is document');
+    }
+    const project = await this.projectsRepo.findOne({
+      where: { id: data.projectId },
+    });
+    if (!project) {
+      throw new NotFoundException('Project nout found!');
+    }
+    let resource: string;
+    if (file && data.type === ProjectAssetType.document) {
+      resource = file.originalname;
+      const directoryPath = assetsFolder;
+      const filePath = `${directoryPath}/${resource}_${data.projectId}${extname(file.originalname)}`;
+      await this.fileStorage.upload(filePath, file.buffer);
+    } else if (!data.link) {
+      throw new BadRequestException('Pleas provide link');
+    } else {
+      resource = data.link;
+    }
+    const asset = this.projectAssetsRepo.create({
+      projectId: project,
+      resource,
+      type: data.type,
+    });
+    const { id } = await this.projectAssetsRepo.save(asset);
+    return { id };
+  }
+
+  async fetchAssets(type: ProjectAssetType, projectId: number) {
+    return this.projectAssetsRepo.find({
+      where: { type, projectId: { id: projectId } },
+    });
+  }
+
+  async downloadAsset(assetId: number) {
+    const asset = await this.projectAssetsRepo.findOne({
+      where: { id: assetId, type: ProjectAssetType.document },
+      relations: ['projectId'],
+    });
+    if (!asset) {
+      throw new NotFoundException('Asset not found!');
+    }
+    const directoryPath = assetsFolder;
+    const filePath = `${directoryPath}/${asset.resource}_${asset.projectId.id}${extname(asset.resource)}`;
+    const file = await this.fileStorage.download(filePath);
+    const readable = file.Body as unknown as Readable;
+    return { file: readable, fileName: asset.resource };
+  }
+
+  async deleteAsset(assetId: number) {
+    const asset = await this.projectAssetsRepo.findOne({
+      where: { id: assetId },
+    });
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
+    }
+    return this.projectAssetsRepo.softRemove(asset);
   }
 }

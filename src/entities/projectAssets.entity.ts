@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Projects } from './projects.entity';
 
@@ -34,6 +35,6 @@ export class ProjectAssets {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'timestamp', default: null, nullable: true })
+  @DeleteDateColumn()
   deletedAt: Date;
 }
