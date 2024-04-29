@@ -14,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { TeamModule } from './teams/teams.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ProjectsModule } from './projects/projects.module';
+import { CardsModule } from './cards/cards.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ProjectsModule } from './projects/projects.module';
     AuthModule,
     TeamModule,
     ProjectsModule,
+    CardsModule,
   ],
   controllers: [AppController],
   providers: [

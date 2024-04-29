@@ -4,8 +4,11 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
+  OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Projects } from './projects.entity';
+import { Tasks } from './tasks.entity';
 
 @Entity({ name: 'cards' })
 export class Cards {
@@ -21,4 +24,10 @@ export class Cards {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @OneToMany(() => Tasks, (task) => task.cardId)
+  tasks?: Tasks[];
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 }
