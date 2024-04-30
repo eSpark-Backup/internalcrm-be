@@ -14,6 +14,9 @@ import { Cards } from './cards.entity';
 
 export enum TaskStatus {
   pending = 'pending',
+  active = 'active',
+  incomplete = 'incomplete',
+  completed = 'completed',
 }
 @Entity({ name: 'tasks' })
 export class Tasks {

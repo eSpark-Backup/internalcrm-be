@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cards } from 'src/entities/cards.entity';
 import { Repository } from 'typeorm';
 import { CreateCardDTO, UpdateCardDTO } from './cards-dto';
 import { ProjectsService } from 'src/projects/projects.service';
+import { TaskStatus } from 'src/entities/tasks.entity';
 
 @Injectable()
 export class CardsService {
@@ -59,6 +64,17 @@ export class CardsService {
     });
     if (!card) {
       throw new NotFoundException('Card not found!');
+    }
+    const hasPendingTasks = card.tasks.some(
+      (task) =>
+        task.status === TaskStatus.pending ||
+        task.status === TaskStatus.active ||
+        task.status === TaskStatus.incomplete,
+    );
+    if (hasPendingTasks) {
+      throw new ForbiddenException(
+        'Cannot delete. Card has pending/active/incomplete tasks',
+      );
     }
     return this.cardsRepo.softRemove(card);
   }
