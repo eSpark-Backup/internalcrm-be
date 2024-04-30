@@ -25,7 +25,7 @@ export class Cards {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @OneToMany(() => Tasks, (task) => task.cardId)
+  @OneToMany(() => Tasks, (task) => task.cardId, { cascade: true })
   tasks?: Tasks[];
 
   @DeleteDateColumn()

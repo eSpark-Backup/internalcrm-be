@@ -5,6 +5,9 @@ import {
   JoinColumn,
   Index,
   ManyToOne,
+  UpdateDateColumn,
+  CreateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Users } from './users.entity';
 import { Cards } from './cards.entity';
@@ -49,16 +52,23 @@ export class Tasks {
   @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.pending })
   status: TaskStatus;
 
-  @Column({ type: 'boolean', default: false })
-  archived: boolean;
-
-  @Column({ type: 'timestamp', nullable: true })
-  updatedAt: Date;
-
   @Column({ type: 'timestamp', nullable: true })
   completedAt: Date;
 
   @Index()
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
   createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 }

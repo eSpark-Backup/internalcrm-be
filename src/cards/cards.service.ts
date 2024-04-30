@@ -20,6 +20,15 @@ export class CardsService {
     });
     return this.cardsRepo.save(newCard);
   }
+
+  async findOne(id: number) {
+    const card = await this.cardsRepo.findOne({ where: { id } });
+    if (!card) {
+      throw new NotFoundException('Card not found');
+    }
+    return card;
+  }
+
   async fetchCards(projectId: number) {
     return this.cardsRepo.find({
       where: { projectId: { id: projectId } },
@@ -44,6 +53,9 @@ export class CardsService {
   async deleteCard(id: number) {
     const card = await this.cardsRepo.findOne({
       where: { id },
+      relations: {
+        tasks: true,
+      },
     });
     if (!card) {
       throw new NotFoundException('Card not found!');

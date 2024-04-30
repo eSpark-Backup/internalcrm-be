@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Projects, ProjectsObj } from 'src/entities/projects.entity';
 import { UserService } from 'src/user/user.service';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   AddMembersDTO,
   CreateProjectDTO,
@@ -106,17 +106,14 @@ export class ProjectsService {
     });
   }
 
-  async deleteMember(user: Users, projectId: number, userId: number) {
-    const member = await this.projectMembersRepo.findOne({
+  async deleteMembers(user: Users, projectId: number, userIds: number[]) {
+    const members = await this.projectMembersRepo.find({
       where: {
         projectId: { createdBy: user, id: projectId },
-        userId: { id: userId },
+        userId: { id: In(userIds) },
       },
     });
-    if (!member) {
-      throw new NotFoundException('Member not found!');
-    }
-    return this.projectMembersRepo.softRemove(member);
+    return this.projectMembersRepo.softRemove(members);
   }
 
   async uploadAsset(file: Express.Multer.File, data: UploadAssetDTO) {
