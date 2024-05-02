@@ -25,7 +25,7 @@ export class UserService {
       user.password,
     );
     if (!isPassCorrect) {
-      throw new UnauthorizedException(`Username or password invalid`);
+      throw new UnauthorizedException(`Email or password invalid`);
     }
     if (!user.isActive) {
       throw new UnauthorizedException(`User is no longer active`);

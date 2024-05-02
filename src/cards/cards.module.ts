@@ -10,5 +10,6 @@ import { UserModule } from 'src/user/user.module';
   imports: [ProjectsModule, UserModule, TypeOrmModule.forFeature([Cards])],
   controllers: [CardsController],
   providers: [CardsService],
+  exports: [CardsService],
 })
 export class CardsModule {}

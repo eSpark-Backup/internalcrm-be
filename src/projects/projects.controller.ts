@@ -31,7 +31,7 @@ import {
   ProjectAssetTypeDTO,
   UpdateProjectDTO,
   UploadAssetDTO,
-  UserIdDTO,
+  UserIdsDTO,
 } from './projects-dto';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/users.entity';
@@ -79,6 +79,7 @@ export class ProjectsController {
           message: `File cannot be greater than ${+process.env.MAX_ASSET_UPLOAD_SIZE / 1024} MBs`,
         })
         .build({
+          fileIsRequired: false,
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
         }),
     )
@@ -232,17 +233,21 @@ export class ProjectsController {
 
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Delete Member',
+    summary: 'Delete Members',
   })
   @Roles([UserRoles.super, UserRoles.lead])
   @UseGuards(AuthGuard)
-  @Delete(':id/member/:userId')
+  @Delete(':id/members')
   @HttpCode(200)
-  async deleteMember(@CurrentUser() user: Users, @Param() id: UserIdDTO) {
-    await this.projectsService.deleteMember(user, id.id, id.userId);
+  async deleteMembers(
+    @Body() members: UserIdsDTO,
+    @CurrentUser() user: Users,
+    @Param() id: ParamIdDTO,
+  ) {
+    await this.projectsService.deleteMembers(user, id.id, members.userIds);
     return {
       status: 'success',
-      message: 'Member has been deleted successfully!',
+      message: 'Members have been deleted successfully!',
     };
   }
 }

@@ -58,14 +58,15 @@ export class AddMembersDTO {
   @ArrayMinSize(1)
   readonly userIds: number[];
 }
-export class UserIdDTO extends ParamIdDTO {
+
+export class UserIdsDTO {
   @ApiProperty({
-    type: String,
+    type: [Number],
   })
-  @IsNotEmpty()
-  @IsNumber()
-  @Transform(({ value }) => parseInt(value))
-  readonly userId: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @ArrayMinSize(1)
+  readonly userIds: number[];
 }
 
 export class UploadAssetDTO {
