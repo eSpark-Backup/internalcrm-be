@@ -14,7 +14,13 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth-guard';
 import { Roles } from 'src/auth/roles-guard';
 import { UserRoles } from 'src/entities/roles.entity';
-import { CreateTaskDTO, QueryParamDTO, UpdateTaskDTO } from './tasks-dto';
+import {
+  AddCommentDTO,
+  CreateTaskDTO,
+  EditCommentDTO,
+  QueryParamDTO,
+  UpdateTaskDTO,
+} from './tasks-dto';
 import { TasksService } from './tasks.service';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/users.entity';
@@ -59,6 +65,71 @@ export class TasksController {
       data,
       status: 'success',
       message: 'Tasks have been fetched successfully!',
+    };
+  }
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Add a comment to a task',
+  })
+  @Post('comments')
+  @HttpCode(200)
+  async addComment(@Body() reqData: AddCommentDTO, @CurrentUser() user: Users) {
+    const data = await this.tasksService.addComment(reqData, user);
+    return {
+      data,
+      status: 'success',
+      message: 'Comment has been added successfully!',
+    };
+  }
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get comments of a task',
+  })
+  @Get(':id/comments')
+  @HttpCode(200)
+  async getComments(
+    @Param() id: ParamIdDTO,
+    @Query() queryParams: QueryParamDTO,
+  ) {
+    const data = await this.tasksService.getComments(
+      queryParams.deleted as unknown as string,
+      id.id,
+    );
+    return {
+      data,
+      status: 'success',
+      message: 'Comments have been fetched successfully!',
+    };
+  }
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Edit comment by Comment ID',
+  })
+  @Patch('comments/:id')
+  @HttpCode(200)
+  async editComment(
+    @Param() id: ParamIdDTO,
+    @Body() reqData: EditCommentDTO,
+    @CurrentUser() user: Users,
+  ) {
+    const data = await this.tasksService.editComment(reqData, id.id, user);
+    return {
+      data,
+      status: 'success',
+      message: 'Comment has been edited successfully!',
+    };
+  }
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete comment by Comment ID',
+  })
+  @Delete('comments/:id')
+  @HttpCode(200)
+  async deleteComment(@Param() id: ParamIdDTO, @CurrentUser() user: Users) {
+    await this.tasksService.deleteComment(id.id, user);
+    return {
+      status: 'success',
+      message: 'Comment has been deleted successfully!',
     };
   }
 

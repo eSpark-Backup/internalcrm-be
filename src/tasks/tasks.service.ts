@@ -1,11 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateTaskDTO, UpdateTaskDTO } from './tasks-dto';
+import {
+  AddCommentDTO,
+  CreateTaskDTO,
+  EditCommentDTO,
+  UpdateTaskDTO,
+} from './tasks-dto';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/users.entity';
 import { Tasks } from 'src/entities/tasks.entity';
 import { Repository } from 'typeorm';
 import { CardsService } from 'src/cards/cards.service';
+import { TaskComments } from 'src/entities/taskComments.entity';
 
 @Injectable()
 export class TasksService {
@@ -14,6 +20,8 @@ export class TasksService {
     private cardsService: CardsService,
     @InjectRepository(Tasks)
     private taskRepositry: Repository<Tasks>,
+    @InjectRepository(TaskComments)
+    private commentsRepositry: Repository<TaskComments>,
   ) {}
   async create(data: CreateTaskDTO, currentUser: Users) {
     const user = await this.userService.getUserDetails(data.assignedTo);
@@ -103,5 +111,46 @@ export class TasksService {
       throw new NotFoundException('Task not found!');
     }
     return this.taskRepositry.softRemove(card);
+  }
+  addComment(data: AddCommentDTO, user: Users) {
+    const commentData = this.commentsRepositry.create({
+      comment: data.comment,
+      taskId: { id: data.taskId },
+      userId: { id: user.id },
+    });
+    return this.commentsRepositry.save(commentData);
+  }
+  getComments(isDeleted: string, taskId: number) {
+    return this.commentsRepositry.find({
+      where: { taskId: { id: taskId } },
+      relations: { taskId: true, userId: true },
+      withDeleted: isDeleted === 'true' ? true : false,
+      select: {
+        taskId: { id: true },
+        userId: { id: true, firstName: true, lastName: true },
+      },
+    });
+  }
+  async editComment(data: EditCommentDTO, id: number, user: Users) {
+    const comment = await this.commentsRepositry.findOne({
+      where: { id, userId: { id: user.id } },
+    });
+    if (!comment) {
+      throw new NotFoundException('Comment not found!');
+    }
+    return this.commentsRepositry.save({
+      ...comment,
+      comment: data.comment,
+      edited: true,
+    });
+  }
+  async deleteComment(id: number, user: Users) {
+    const comment = await this.commentsRepositry.findOne({
+      where: { id, userId: { id: user.id } },
+    });
+    if (!comment) {
+      throw new NotFoundException('Comment not found!');
+    }
+    return this.commentsRepositry.softRemove(comment);
   }
 }

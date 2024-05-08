@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Users } from './users.entity';
 import { Tasks } from './tasks.entity';
@@ -27,8 +28,8 @@ export class TaskComments {
   @Column({ type: 'boolean', default: false })
   edited: boolean;
 
-  @Column({ type: 'timestamp', default: null, nullable: true })
-  deleted: Date;
+  @DeleteDateColumn()
+  deletedAt: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

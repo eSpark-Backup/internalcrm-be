@@ -1,4 +1,9 @@
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  PartialType,
+  PickType,
+} from '@nestjs/swagger';
 import {
   IsDateString,
   IsEnum,
@@ -88,3 +93,25 @@ export class UpdateTaskDTO extends PartialType(CreateTaskDTO) {
   @IsOptional()
   readonly status?: TaskStatus;
 }
+
+export class AddCommentDTO {
+  @ApiProperty({
+    type: Number,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(1)
+  readonly taskId: number;
+
+  @ApiProperty({
+    type: String,
+    example: 'Comment',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly comment: string;
+}
+
+export class EditCommentDTO extends PickType(AddCommentDTO, [
+  'comment',
+] as const) {}
