@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -20,7 +21,7 @@ export class CloudStorageService {
   constructor(private readonly configService: ConfigService) {}
 
   async upload(fileName: string, file: Buffer) {
-    await this.s3Client.send(
+    return this.s3Client.send(
       new PutObjectCommand({
         Bucket: this.configService.getOrThrow('BUCKET_NAME'),
         Key: fileName,
@@ -29,9 +30,17 @@ export class CloudStorageService {
     );
   }
 
-  async download(fileName: string) {
+  download(fileName: string) {
     return this.s3Client.send(
       new GetObjectCommand({
+        Bucket: this.configService.getOrThrow('BUCKET_NAME'),
+        Key: fileName,
+      }),
+    );
+  }
+  delete(fileName: string) {
+    return this.s3Client.send(
+      new DeleteObjectCommand({
         Bucket: this.configService.getOrThrow('BUCKET_NAME'),
         Key: fileName,
       }),

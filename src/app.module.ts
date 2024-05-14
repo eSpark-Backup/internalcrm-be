@@ -16,6 +16,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ProjectsModule } from './projects/projects.module';
 import { CardsModule } from './cards/cards.module';
 import { TasksModule } from './tasks/tasks.module';
+import { LeadSourceModule } from './lead-sources/lead-sources.module';
+import { LeadsModule } from './leads/leads.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { TasksModule } from './tasks/tasks.module';
     ProjectsModule,
     CardsModule,
     TasksModule,
+    LeadSourceModule,
+    LeadsModule,
   ],
   controllers: [AppController],
   providers: [
